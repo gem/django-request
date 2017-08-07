@@ -28,6 +28,7 @@ setup(
     install_requires=[
         'django >= 1.4',
         'python-dateutil',
+        'django-ipware'
     ],
     license=request.__licence__,
     classifiers=[

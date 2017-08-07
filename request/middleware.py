@@ -2,6 +2,7 @@
 from request import settings
 from request.models import Request
 from request.router import patterns
+from ipware.ip import get_ip
 
 
 try:
@@ -27,7 +28,7 @@ class RequestMiddleware(MiddlewareMixin):
         if request.is_ajax() and settings.IGNORE_AJAX:
             return response
 
-        if request.META.get('REMOTE_ADDR') in settings.IGNORE_IP:
+        if get_ip(request) in settings.IGNORE_IP:
             return response
 
         ignore = patterns(False, *settings.IGNORE_USER_AGENTS)

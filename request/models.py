@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from request import settings as request_settings
 from request.managers import RequestManager
 from request.utils import HTTP_STATUS_CODES, browsers, engines
+from ipware.ip import get_ip
 
 try:
     from django.contrib.auth import get_user_model
@@ -69,7 +70,7 @@ class Request(models.Model):
         self.is_ajax = request.is_ajax()
 
         # User infomation
-        self.ip = request.META.get('REMOTE_ADDR', '')
+        self.ip = get_ip(request) if not None else '0.0.0.0'
         self.referer = request.META.get('HTTP_REFERER', '')[:255]
         self.user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]
         self.language = request.META.get('HTTP_ACCEPT_LANGUAGE', '')[:255]
