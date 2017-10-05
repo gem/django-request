@@ -2,7 +2,6 @@
 import json
 
 from django.contrib.admin import site
-from django.core.urlresolvers import reverse
 from django.test import RequestFactory, TestCase
 from request.admin import RequestAdmin
 from request.models import Request
@@ -13,6 +12,12 @@ try:
 except ImportError:
     # to keep backward (Django <= 1.4) compatibility
     from django.contrib.auth.models import User
+
+try:
+    from django.urls import reverse
+except ImportError:
+    # to keep backward (Django < 1.10) compatibility
+    from django.core.urlresolvers import reverse
 
 
 class LookupAllowedTest(TestCase):
@@ -80,6 +85,11 @@ class RequestAdminViewsTest(TestCase):
 
     def test_overview(self):
         url = reverse('admin:request_request_overview')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_changelist(self):
+        url = reverse('admin:request_request_changelist')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from request import settings
-from request.models import Request
-from request.router import patterns
 from ipware.ip import get_ip
 
+from . import settings
+from .models import Request
+from .router import Patterns
 
 try:
     # needed to support Django >= 1.10 MIDDLEWARE
@@ -21,7 +21,7 @@ class RequestMiddleware(MiddlewareMixin):
         if response.status_code < 400 and settings.ONLY_ERRORS:
             return response
 
-        ignore = patterns(False, *settings.IGNORE_PATHS)
+        ignore = Patterns(False, *settings.IGNORE_PATHS)
         if ignore.resolve(request.path[1:]):
             return response
 
@@ -31,12 +31,12 @@ class RequestMiddleware(MiddlewareMixin):
         if get_ip(request) in settings.IGNORE_IP:
             return response
 
-        ignore = patterns(False, *settings.IGNORE_USER_AGENTS)
+        ignore = Patterns(False, *settings.IGNORE_USER_AGENTS)
         if ignore.resolve(request.META.get('HTTP_USER_AGENT', '')):
             return response
 
         if getattr(request, 'user', False):
-            if request.user.username in settings.IGNORE_USERNAME:
+            if request.user.get_username() in settings.IGNORE_USERNAME:
                 return response
 
         r = Request()

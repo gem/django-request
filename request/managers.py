@@ -4,11 +4,9 @@ import time
 
 from django.db import models
 from django.db.models import Q
+from django.utils import timezone
 
-try:  # For python <= 2.3
-    set()
-except NameError:
-    from sets import Set as set
+from . import settings
 
 QUERYSET_PROXY_METHODS = (
     'year',
@@ -39,6 +37,9 @@ class RequestQuerySet(models.query.QuerySet):
             except ValueError:
                 return
 
+        # Truncate to date.
+        if isinstance(date, datetime.datetime):
+            date = date.date()
         # Calculate first and last day of month, for use in a date-range lookup.
         first_day = date.replace(day=1)
         if first_day.month == 12:
@@ -88,7 +89,7 @@ class RequestQuerySet(models.query.QuerySet):
         return self.day(date=datetime.date.today())
 
     def this_year(self):
-        return self.year(datetime.datetime.now().year)
+        return self.year(datetime.date.today().year)
 
     def this_month(self):
         return self.month(date=datetime.date.today())
@@ -98,7 +99,6 @@ class RequestQuerySet(models.query.QuerySet):
         return self.week(str(today.year), today.strftime('%U'))
 
     def unique_visits(self):
-        from request import settings
         return self.exclude(referer__startswith=settings.BASE_URL)
 
     def attr_list(self, name):
@@ -111,13 +111,11 @@ class RequestQuerySet(models.query.QuerySet):
 class RequestManager(models.Manager):
     def __getattr__(self, attr, *args, **kwargs):
         if attr in QUERYSET_PROXY_METHODS:
-            return getattr(self.get_query_set(), attr, None)
+            return getattr(self.get_queryset(), attr, None)
         super(RequestManager, self).__getattr__(*args, **kwargs)
 
     def get_queryset(self):
         return RequestQuerySet(self.model)
-
-    get_query_set = get_queryset  # Django 1.5 compat
 
     def active_users(self, **options):
         '''
@@ -134,7 +132,7 @@ class RequestManager(models.Manager):
         qs = self.filter(user__isnull=False)
 
         if options:
-            time = datetime.datetime.now() - datetime.timedelta(**options)
+            time = timezone.now() - datetime.timedelta(**options)
             qs = qs.filter(time__gte=time)
 
         requests = qs.select_related('user').only('user')
