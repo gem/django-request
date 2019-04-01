@@ -10,7 +10,7 @@ from six import python_2_unicode_compatible
 
 from . import settings as request_settings
 from .managers import RequestManager
-from .utils import HTTP_STATUS_CODES, browsers, engines
+from .utils import HTTP_STATUS_CODES, browsers, engines, get_ip_address
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
@@ -62,7 +62,7 @@ class Request(models.Model):
         self.is_ajax = request.is_ajax()
 
         # User information.
-        self.ip = request.META.get('REMOTE_ADDR', '')
+        self.ip = get_ip_address(request)
         self.referer = request.META.get('HTTP_REFERER', '')[:255]
         self.user_agent = request.META.get('HTTP_USER_AGENT', '')[:255]
         self.language = request.META.get('HTTP_ACCEPT_LANGUAGE', '')[:255]

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import settings
+from .utils import get_ip_address
 from .models import Request
 from .router import Patterns
 
@@ -26,7 +27,7 @@ class RequestMiddleware(MiddlewareMixin):
         if request.is_ajax() and settings.IGNORE_AJAX:
             return response
 
-        if request.META.get('REMOTE_ADDR') in settings.IGNORE_IP:
+        if get_ip_address(request) in settings.IGNORE_IP:
             return response
 
         ignore = Patterns(False, *settings.IGNORE_USER_AGENTS)

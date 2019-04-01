@@ -154,3 +154,8 @@ def get_verbose_name(class_name):
         ' \\1',
         class_name,
     ).strip()
+
+
+def get_ip_address(request):
+    return request.META.get(
+        'HTTP_X_REAL_IP', request.META.get('REMOTE_ADDR', '127.0.0.1'))
